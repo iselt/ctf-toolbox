@@ -1,0 +1,106 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install Linux system deps
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install frontend deps
+        run: npm ci
+
+      - name: Fetch pinned CyberChef build
+        run: python scripts/fetch_cyberchef.py
+
+      - name: Build Tauri app
+        run: npx tauri build --target ${{ matrix.target }}
+
+      - name: Collect bundles
+        shell: bash
+        run: |
+          mkdir -p out
+          find src-tauri/target -type f \( -name '*.dmg' -o -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' -o -name '*.msi' -o -name '*-setup.exe' \) -exec cp {} out/ \;
+          ls -la out/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ctf-toolbox-${{ matrix.target }}
+          if-no-files-found: error
+          path: out/*
+
+  release:
+    name: Create GitHub release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: List artifacts
+        run: find dist -type f | sort
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          body: |
+            # CTF Toolbox ${{ github.ref_name }}
+
+            100% 离线运行的 CTF 工具箱(CyberChef / JWT / 反弹Shell / Payload速查 / 编码哈希RSA 等)。
+
+            | Platform | Artifact |
+            |----------|----------|
+            | macOS (Apple Silicon) | `*_aarch64.dmg` |
+            | macOS (Intel) | `*_x64.dmg` |
+            | Linux | `.deb` / `.rpm` / `.AppImage` |
+            | Windows | `*-setup.exe` / `.msi` (内嵌 WebView2 离线安装器,无网也能装) |
+
+            > macOS 未签名:首次打开请右键 → 打开;Windows 未签名可能有 SmartScreen 提示,选择「仍要运行」。

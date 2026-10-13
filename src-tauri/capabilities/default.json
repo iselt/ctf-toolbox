@@ -1,0 +1,15 @@
+{
+  "identifier": "default",
+  "description": "Main window capability. HTTP fetch is only used by the user-driven HTTP Sender tool against user-specified targets (e.g. localhost CTF challenges); the app itself never touches the network.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        { "url": "http://**" },
+        { "url": "https://**" }
+      ]
+    }
+  ]
+}

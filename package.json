@@ -1,0 +1,23 @@
+{
+  "name": "ctf-toolbox",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "fetch:cyberchef": "python3 scripts/fetch_cyberchef.py",
+    "icons": "python3 scripts/gen_icons.py"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.9.0",
+    "@tauri-apps/plugin-http": "^2.5.2"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.9.6",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.7"
+  }
+}

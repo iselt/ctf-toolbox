@@ -1,4 +1,4 @@
-import { el, copyBtn } from "../ui";
+import { el, esc, copyBtn } from "../ui";
 import { PAYLOADS, PAYLOAD_CATS, type PayloadCat } from "../data/payloads";
 
 export function render(root: HTMLElement): void {
@@ -59,12 +59,12 @@ export function render(root: HTMLElement): void {
     for (const p of items) {
       const d = el(`<details class="payload">
         <summary>
-          <span><span class="badge g" style="margin-right:8px">${p.cat}</span>${p.name}</span>
-          <span class="muted small mono" style="max-width:45%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${p.code.slice(0, 60)}</span>
+          <span><span class="badge g" style="margin-right:8px">${esc(p.cat)}</span>${esc(p.name)}</span>
+          <span class="muted small mono" style="max-width:45%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${esc(p.code.slice(0, 60))}</span>
         </summary>
         <div class="body">
           <div class="copy-source"><pre class="code"></pre></div>
-          ${p.note ? `<div class="small muted" style="margin-top:6px">💡 ${p.note}</div>` : ""}
+          ${p.note ? `<div class="small muted" style="margin-top:6px">💡 ${esc(p.note)}</div>` : ""}
         </div>
       </details>`) as HTMLElement;
       const pre = d.querySelector("pre") as HTMLElement;

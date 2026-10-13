@@ -1,4 +1,4 @@
-import { el, copyBtn, toast } from "../ui";
+import { el, esc, copyBtn, toast } from "../ui";
 import { te, b64urlEncode, b64urlDecode, tryUtf8 } from "../lib/b64";
 import { JWT_SECRETS } from "../data/jwt-secrets";
 
@@ -150,7 +150,7 @@ export function render(root: HTMLElement): void {
       const hit = await tryAlg(current, key);
       if (hit) {
         secretIn.style.borderColor = "var(--accent)";
-        vcOut.innerHTML = `<span class="ok">✅ 签名正确</span> — 密钥 <span class="mono hl-yellow">${secretIn.value}</span> (算法 ${hit})`;
+        vcOut.innerHTML = `<span class="ok">✅ 签名正确</span> — 密钥 <span class="mono hl-yellow">${esc(secretIn.value)}</span> (算法 ${hit})`;
       } else if (current.alg === "none") {
         vcOut.innerHTML = '<span class="hl-yellow">⚠ 该 token 算法为 none,无签名</span>';
       } else {
@@ -179,7 +179,7 @@ export function render(root: HTMLElement): void {
         const hit = await tryAlg(current, te.encode(w));
         if (hit) {
           secretIn.value = w;
-          vcOut.innerHTML = `<span class="ok">✅ 爆破成功:</span> 密钥 = <span class="mono hl-yellow">${w}</span> (${hit}),耗时 ${(performance.now() - t0).toFixed(0)}ms,已填入上方密钥框`;
+          vcOut.innerHTML = `<span class="ok">✅ 爆破成功:</span> 密钥 = <span class="mono hl-yellow">${esc(w)}</span> (${hit}),耗时 ${(performance.now() - t0).toFixed(0)}ms,已填入上方密钥框`;
           secretIn.style.borderColor = "var(--accent)";
           return;
         }
